@@ -1,6 +1,6 @@
 from efind import (
     Solver, Output, Capacitor, Resistor, ComponentValue, fmt_eng,
-    E12,  E24, E96,
+    E12, E24, E96,
 )
 
 

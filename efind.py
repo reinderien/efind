@@ -12,9 +12,10 @@ from typing import (
     Iterable,
     List,
     Optional,
+    Protocol,
     Sequence,
     Set,
-    Tuple,
+    Tuple, 
 )
 
 
@@ -119,10 +120,9 @@ def fmt_eng(x: float, unit: str, sig: int = 2) -> str:
 
 # a callable with any number of floating-point
 # arguments, returning a float
-CalculateCall = Callable #[
-#    [float, ...],
-#    float
-#]
+class CalculateCall(Protocol):
+    def __call__(self, *args: float) -> float:
+        ...
 
 
 class ComponentValue:
@@ -275,7 +275,7 @@ class Component:
         return f'{self.prefix}{self.suffix}'
 
     def _calculate_values(
-            self, prev: Sequence[ComponentValue]
+        self, prev: Sequence[ComponentValue]
     ) -> Iterable[ComponentValue]:
 
         def values():
@@ -318,7 +318,7 @@ class Component:
                 yield index, decade
 
     def _iter_values(
-        self, prev: Sequence[ComponentValue]
+        self, prev: Sequence[ComponentValue],
     ) -> Iterable[ComponentValue]:
         for index, decade in self._all_values():
             value = ComponentValue(self, index=index, decade=decade)
@@ -362,8 +362,9 @@ class Output:
     """
 
     def __init__(
-            self, name: str, unit: str, expected: float,
-            calculate: CalculateCall):
+        self, name: str, unit: str, expected: float,
+        calculate: CalculateCall,
+    ):
         """
         :param name: i.e. Vout
         :param unit: i.e. V, A, Hz...
@@ -480,4 +481,3 @@ class Solver:
                 f'{output.error(value):>8.1e}'
                 for value, output in zip(outputs, self.outputs)
             ))
-
