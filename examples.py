@@ -45,6 +45,48 @@ def opamp():
     svout.print()
 
 
+def opamp2():
+    # https://electronics.stackexchange.com/questions/564165
+    # Op-amp to scale 3-4.2V -> 1-5V
+
+    Vcc = 12
+
+    def Vo(Vi: float, R3: float, R2: float, R1: float) -> float:
+        I1 = (Vcc - Vi)/R1
+        I2 = Vi/R2
+        I3 = I1 - I2
+        V3 = I3*R3
+        return Vi - V3
+
+    def Vol(R3: float, R2: float, R1: float) -> float:
+        return Vo(3, R3, R2, R1)
+
+    def Voh(R3: float, R2: float, R1: float) -> float:
+        return Vo(4.2, R3, R2, R1)
+
+    svout = Solver(
+        components=(
+            Resistor(
+                suffix='3', series=E96, minimum=50e3, maximum=500e3,
+            ),
+            Resistor(
+                suffix='2', series=E96, calculate=lambda R3: R3*12/19,
+            ),
+            Resistor(
+                suffix='1', series=E96, calculate=lambda R3, R2: R3*4/3,
+            ),
+        ),
+        outputs=(
+            Output('Vol', unit='V', expected=1, calculate=Vol),
+            Output('Voh', unit='V', expected=5, calculate=Voh),
+        ),
+        threshold=1e-2,
+    )
+
+    svout.solve()
+    svout.print()
+
+
 def buck():
     # https://electronics.stackexchange.com/a/562550/10008
     # Convert down to 3V using the device described in
@@ -170,4 +212,4 @@ def complex_smps():
     )
 
 
-opamp()
+opamp2()
