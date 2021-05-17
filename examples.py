@@ -47,22 +47,30 @@ def opamp():
 
 def opamp2():
     # https://electronics.stackexchange.com/questions/564165
-    # Op-amp to scale 3-4.2V -> 1-5V
+    # Op-amp to scale 3.4-4.1V -> 1-5V
 
-    Vcc = 12
+    Vref = 4.096  # or maybe 12V
+    Vi1, Vo1 = 3.4, 1
+    Vi2, Vo2 = 4.1, 5
+    b = (
+        ((Vref - Vi1)*(Vi2 - Vo2) - (Vref - Vi2)*(Vi1 - Vo1)) /
+        ((Vref - Vi2)*Vi1 - (Vref - Vi1)*Vi2)
+    )
+    a = (Vi1*(b + 1) - Vo1)/(Vref - Vi1)
 
     def Vo(Vi: float, R3: float, R2: float, R1: float) -> float:
-        I1 = (Vcc - Vi)/R1
+        I1 = (Vref - Vi)/R1
         I2 = Vi/R2
         I3 = I1 - I2
         V3 = I3*R3
-        return Vi - V3
+        vo = Vi - V3
+        return vo
 
     def Vol(R3: float, R2: float, R1: float) -> float:
-        return Vo(3, R3, R2, R1)
+        return Vo(3.4, R3, R2, R1)
 
     def Voh(R3: float, R2: float, R1: float) -> float:
-        return Vo(4.2, R3, R2, R1)
+        return Vo(4.1, R3, R2, R1)
 
     svout = Solver(
         components=(
@@ -70,10 +78,10 @@ def opamp2():
                 suffix='3', series=E96, minimum=50e3, maximum=500e3,
             ),
             Resistor(
-                suffix='2', series=E96, calculate=lambda R3: R3*12/19,
+                suffix='2', series=E96, calculate=lambda R3: R3/b,
             ),
             Resistor(
-                suffix='1', series=E96, calculate=lambda R3, R2: R3*4/3,
+                suffix='1', series=E96, calculate=lambda R3, R2: R3/a,
             ),
         ),
         outputs=(
