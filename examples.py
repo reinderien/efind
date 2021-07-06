@@ -105,21 +105,21 @@ def opamp3():
     Vi1, Vi2 = 0.2*Vih, 0.8*Vih
     gain = -Vss/(Vi2 - Vi1)
     offset = -gain*Vi2
-    a = R1R2 = 1.5   # to center the input wave on Vss/2
     amin = -Vih/Vss  # to avoid clipping
+    a = R1R2 = 1.5   # to center the input wave on Vss/2
     b = R4R3 = (gain + offset/Vss - 1) / (1 - Vdd/Vss)
     c = R4R5 = gain*(1 + a) - b - 1
 
     def Vi(Vo: float, R1: float, R2: float, R3: float, R4: float, R5: float) -> float:
-        R3pR4 = 1 / (1 / R3 + 1 / R4)
-        R3pR5 = 1 / (1 / R3 + 1 / R5)
-        R4pR5 = 1 / (1 / R4 + 1 / R5)
+        R3pR4 = 1 / (1/R3 + 1/R4)
+        R3pR5 = 1 / (1/R3 + 1/R5)
+        R4pR5 = 1 / (1/R4 + 1/R5)
         Vp_Vdd = Vdd * R4pR5 / (R4pR5 + R3)
         Vp_Vo = Vo * R3pR5 / (R3pR5 + R4)
         Vp_Vss = Vss * R3pR4 / (R3pR4 + R5)
         Vp = Vp_Vdd + Vp_Vo + Vp_Vss
-        I1 = (Vp - Vss) / R2
-        return Vp + I1 * R1
+        I1 = (Vp - Vss)/R2
+        return Vp + I1*R1
 
     def Vilact(*args: float) -> float:
         return Vi(Vss, *args)
@@ -128,8 +128,8 @@ def opamp3():
         return Vi(0, *args)
 
     def Vpmean(R1: float, R2: float, R3: float, R4: float, R5: float) -> float:
-        Vpmax = (Vih - Vss) / (1 + a) + Vss
-        Vpmin = (0 - Vss) / (1 + a) + Vss
+        Vpmax = (Vih - Vss) / (1 + R1/R2) + Vss
+        Vpmin = (0 - Vss) / (1 + R1/R2) + Vss
         return (Vpmax + Vpmin) / 2
 
     svout = Solver(
@@ -138,16 +138,16 @@ def opamp3():
                 suffix='1', series=E24, minimum=10e3, maximum=100e3,
             ),
             Resistor(
-                suffix='2', series=E24, calculate=lambda R1: R1 / R1R2
+                suffix='2', series=E24, calculate=lambda R1: R1/R1R2
             ),
             Resistor(
                 suffix='3', series=E24, minimum=10e3, maximum=100e3,
             ),
             Resistor(
-                suffix='4', series=E24, calculate=lambda R1, R2, R3: R3 * R4R3
+                suffix='4', series=E24, calculate=lambda R1, R2, R3: R3*R4R3
             ),
             Resistor(
-                suffix='5', series=E24, calculate=lambda R1, R2, R3, R4: R4 / R4R5
+                suffix='5', series=E24, calculate=lambda R1, R2, R3, R4: R4/R4R5
             ),
         ),
         outputs=(
