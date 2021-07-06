@@ -99,14 +99,14 @@ def opamp3():
     # https://electronics.stackexchange.com/questions/573296
     # Op-amp level shifter, 0-3.3V -> 0 - -7V with hysteresis
     # Account for common-mode-friendly input symmetric within Vss
-    Vdd = 3.3  # or 5
+    Vdd = 0  # or 3.3 or 5
     Vss = -7
     Vih = 3.3
     Vi1, Vi2 = 0.2*Vih, 0.8*Vih
     gain = -Vss/(Vi2 - Vi1)
     offset = -gain*Vi2
     amin = -Vih/Vss  # to avoid clipping
-    a = R1R2 = 1.5   # to center the input wave on Vss/2
+    a = R1R2 = 1 - Vih/Vss   # to center the input wave on Vss/2
     b = R4R3 = (gain + offset/Vss - 1) / (1 - Vdd/Vss)
 
     def Vi(Vo: float, R1: float, R2: float, R3: float, R4: float, R5: float) -> float:
