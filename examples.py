@@ -108,7 +108,6 @@ def opamp3():
     amin = -Vih/Vss  # to avoid clipping
     a = R1R2 = 1.5   # to center the input wave on Vss/2
     b = R4R3 = (gain + offset/Vss - 1) / (1 - Vdd/Vss)
-    c = R4R5 = gain*(1 + a) - b - 1
 
     def Vi(Vo: float, R1: float, R2: float, R3: float, R4: float, R5: float) -> float:
         R3pR4 = 1 / (1/R3 + 1/R4)
@@ -132,22 +131,26 @@ def opamp3():
         Vpmin = (0 - Vss) / (1 + R1/R2) + Vss
         return (Vpmax + Vpmin) / 2
 
+    def getR5(R1: float, R2: float, R3: float, R4: float) -> float:
+        c = R4R5 = gain * (1 + R1/R2) - R4/R3 - 1
+        return R4/R4R5
+
     svout = Solver(
         components=(
             Resistor(
                 suffix='1', series=E24, minimum=10e3, maximum=100e3,
             ),
             Resistor(
-                suffix='2', series=E24, calculate=lambda R1: R1/R1R2
+                suffix='2', series=E24, calculate=lambda R1: R1/R1R2,
             ),
             Resistor(
                 suffix='3', series=E24, minimum=10e3, maximum=100e3,
             ),
             Resistor(
-                suffix='4', series=E24, calculate=lambda R1, R2, R3: R3*R4R3
+                suffix='4', series=E24, calculate=lambda R1, R2, R3: R3*R4R3,
             ),
             Resistor(
-                suffix='5', series=E24, calculate=lambda R1, R2, R3, R4: R4/R4R5
+                suffix='5', series=E24, calculate=getR5,
             ),
         ),
         outputs=(
