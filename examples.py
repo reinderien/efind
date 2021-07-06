@@ -98,73 +98,39 @@ def opamp2():
 def opamp3():
     # https://electronics.stackexchange.com/questions/573296
     # Op-amp level shifter, 0-3.3V -> 0 - -7V with hysteresis
-
-    Vdd = 5
+    # Account for common-mode-friendly input symmetric within Vss
+    Vdd = 3.3  # or 5
     Vss = -7
     Vih = 3.3
     Vi1, Vi2 = 0.2*Vih, 0.8*Vih
     gain = -Vss/(Vi2 - Vi1)
-    R2R1 = gain*Vi2/Vdd
-    R2R3 = gain - R2R1 - 1
+    offset = -gain*Vi2
+    a = R1R2 = 1.5   # to center the input wave on Vss/2
+    amin = -Vih/Vss  # to avoid clipping
+    b = R4R3 = (gain + offset/Vss - 1) / (1 - Vdd/Vss)
+    c = R4R5 = gain*(1 + a) - b - 1
 
-    def Vi(Vo: float, R1: float, R2: float, R3: float) -> float:
-        R1pR3 = 1/(1/R1 + 1/R3)
-        Voa = Vo * R1pR3 / (R1pR3 + R2)
-        R2pR3 = 1/(1/R2 + 1/R3)
-        Vob = Vdd * R2pR3 / (R2pR3 + R1)
-        return Voa + Vob
+    def Vi(Vo: float, R1: float, R2: float, R3: float, R4: float, R5: float) -> float:
+        R3pR4 = 1 / (1 / R3 + 1 / R4)
+        R3pR5 = 1 / (1 / R3 + 1 / R5)
+        R4pR5 = 1 / (1 / R4 + 1 / R5)
+        Vp_Vdd = Vdd * R4pR5 / (R4pR5 + R3)
+        Vp_Vo = Vo * R3pR5 / (R3pR5 + R4)
+        Vp_Vss = Vss * R3pR4 / (R3pR4 + R5)
+        Vp = Vp_Vdd + Vp_Vo + Vp_Vss
+        I1 = (Vp - Vss) / R2
+        return Vp + I1 * R1
 
-    def Vilact(R1: float, R2: float, R3: float) -> float:
-        return Vi(Vss, R1, R2, R3)
+    def Vilact(*args: float) -> float:
+        return Vi(Vss, *args)
 
-    def Vihact(R1: float, R2: float, R3: float) -> float:
-        return Vi(0, R1, R2, R3)
+    def Vihact(*args: float) -> float:
+        return Vi(0, *args)
 
-    svout = Solver(
-        components=(
-            Resistor(
-                suffix='1', series=E24, minimum=10e3, maximum=100e3,
-            ),
-            Resistor(
-                suffix='2', series=E24, calculate=lambda R1: R1*R2R1,
-            ),
-            Resistor(
-                suffix='3', series=E24, calculate=lambda R1, R2: R2/R2R3,
-            ),
-        ),
-        outputs=(
-            Output('Vil', unit='V', expected=Vi1, calculate=Vilact),
-            Output('Vih', unit='V', expected=Vi2, calculate=Vihact),
-        ),
-        threshold=1e-2,
-    )
-
-    svout.solve()
-    svout.print()
-
-
-def opamp3b():
-    # Similar but accounting for common-mode-friendly inputs
-
-    Vss1 = -12
-    Vss2 = -7
-    Vih = 3.3
-    Vi1, Vi2 = 0.2*Vih, 0.8*Vih
-    gain = -Vss2/(Vi2 - Vi1)
-    R4R3 = (-gain*Vi2 + Vss1*(gain - 1))/(Vss1 - Vss2)
-    R1R2 = (R4R3 + 1)/gain - 1
-
-    def Vi(Vo: float, R1: float, R2: float, R3: float, R4: float) -> float:
-        Vp = R3/(R3 + R4) * (Vo - Vss2) + Vss2
-        I2 = (Vp - Vss1) / R2
-        Vin = Vp + I2 * R1
-        return Vin
-
-    def Vilact(R1: float, R2: float, R3: float, R4: float) -> float:
-        return Vi(Vss2, R1, R2, R3, R4)
-
-    def Vihact(R1: float, R2: float, R3: float, R4: float) -> float:
-        return Vi(0, R1, R2, R3, R4)
+    def Vpmean(R1: float, R2: float, R3: float, R4: float, R5: float) -> float:
+        Vpmax = (Vih - Vss) / (1 + a) + Vss
+        Vpmin = (0 - Vss) / (1 + a) + Vss
+        return (Vpmax + Vpmin) / 2
 
     svout = Solver(
         components=(
@@ -172,18 +138,22 @@ def opamp3b():
                 suffix='1', series=E24, minimum=10e3, maximum=100e3,
             ),
             Resistor(
-                suffix='2', series=E24, calculate=lambda R1: R1/R1R2,
+                suffix='2', series=E24, calculate=lambda R1: R1 / R1R2
             ),
             Resistor(
                 suffix='3', series=E24, minimum=10e3, maximum=100e3,
             ),
             Resistor(
-                suffix='4', series=E24, calculate=lambda R1, R2, R3: R3*R4R3,
+                suffix='4', series=E24, calculate=lambda R1, R2, R3: R3 * R4R3
+            ),
+            Resistor(
+                suffix='5', series=E24, calculate=lambda R1, R2, R3, R4: R4 / R4R5
             ),
         ),
         outputs=(
             Output('Vil', unit='V', expected=Vi1, calculate=Vilact),
             Output('Vih', unit='V', expected=Vi2, calculate=Vihact),
+            Output('Vpmean', unit='V', expected=Vss/2, calculate=Vpmean),
         ),
         threshold=1e-2,
     )
@@ -317,4 +287,4 @@ def complex_smps():
     )
 
 
-opamp3b()
+opamp3()
