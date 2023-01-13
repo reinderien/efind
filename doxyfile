@@ -1,0 +1,40 @@
+## we leave DOXYFILE_ENCODING at its default of UTF-8
+PROJECT_NAME=efind
+PROJECT_BRIEF=electronic component selection utility
+
+## allow DOXYGEN commands in docstrings
+PYTHON_DOCSTRING=NO
+
+## leave this as yes while the documentation is still being defined
+EXTRACT_ALL=YES
+EXTRACT_PACKAGE=YES
+EXTRACT_STATIC=YES
+
+## changed to YES so we will be warned if there is an absence of documentation about parameters
+WARN_NO_PARAMDOC=YES
+
+## changed to YES to ensure warnings about undocumented enumeration values
+WARN_IF_UNDOC_ENUM_VAL=YES
+
+## the INPUT tag is left empty because all of the source code is in the current directory
+
+## to do: will set a value to EAMPLE_PATH 
+
+## to do: will set USE_MDFILE_AS_MAINPAGE
+
+SOURCE_BROWSER=YES
+
+## will revise according to best practices if needed
+
+HTML_TIMESTAMP=YES
+
+HTML_DYNAMIC_SECTIONS=YES
+
+GENERATE_TREEVIEW=YES
+
+GENERATE_LATEX=NO
+
+
+
+
+

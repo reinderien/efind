@@ -53,9 +53,9 @@ E96 = (
 def bisect_lower(a: Sequence[float], x: float) -> int:
     """
     Run bisect, but use one index before the return value of `bisect_left`
-    :param a: The sorted haystack
-    :param x: The needle
-    :return: The index of the array element that equals or is lesser than `x`
+    @param a The sorted haystack
+    @param x The needle
+    @return The index of the array element that equals or is lesser than `x`
     """
     i = bisect_left(a, x)
     if (
@@ -69,9 +69,9 @@ def bisect_lower(a: Sequence[float], x: float) -> int:
 def approximate(x: float, series: Sequence[float]) -> (int, float):
     """
     Approximate a value by using the given series.
-    :param x: Any positive value
-    :param series: Any of E3 through E96
-    :return: An integer index into the series for the element lesser than or
+    @param x Any positive value
+    @param series Any of E3 through E96
+    @return An integer index into the series for the element lesser than or
              equal to the value's mantissa, and the value's decade - a power of
              ten
     """
@@ -89,10 +89,10 @@ def approximate(x: float, series: Sequence[float]) -> (int, float):
 def fmt_eng(x: float, unit: str, sig: int = 2) -> str:
     """
     Format a number in engineering (SI) notation
-    :param x: Any number
-    :param unit: The quantity unit (Hz, A, etc.)
-    :param sig: Number of significant digits to show
-    :return: The formatted string
+    @param x Any number
+    @param unit The quantity unit (Hz, A, etc.)
+    @param sig Number of significant digits to show
+    @return The formatted string
     """
     if x == 0:
         p = 0
@@ -139,14 +139,15 @@ class ComponentValue:
     ):
         """
         Valid combinations:
-            exact - approximated value will be calculated
-            exact, index, decade - approximated value = series[index]*decade
-            index, decade - approximated value = series[index]*decade;
+          - exact - approximated value will be calculated
+          - exact, index, decade - approximated value = series[index]*decade
+          - index, decade - approximated value = series[index]*decade;
                             exact=approximate
-        :param decade: The quantity's power-of-ten
-        :param index: The integer index into the series for the quantity's
+
+        @param decade The quantity's power-of-ten
+        @param index The integer index into the series for the quantity's
                       mantissa
-        :param exact: The exact quantity, if known
+        @param exact The exact quantity, if known
         """
 
         self.component = component
@@ -177,7 +178,7 @@ class ComponentValue:
 
     def get_other(self) -> Optional['ComponentValue']:
         """
-        :return: If this approximated value is below its exact value, then the
+        @return: If this approximated value is below its exact value, then the
                  next-highest E24 value; otherwise None
         """
         if self.approx >= self.exact:
@@ -224,24 +225,24 @@ class Component:
         use_for_err: bool = True,
     ):
         """
-        :param prefix: i.e. R, C or L
-        :param suffix: Typically a number, i.e. the "2" in R2
-        :param unit: i.e. Hz, A, F, ...
-        :param series: One of E3 through E96
-        :param calculate: A callable that will be given all values of previous
-                          components in the calculation sequence. These values
-                          are floats, and the return must be a float.
-                          If this callable is None, the component will be
-                          interpreted as a degree of freedom.
-        :param minimum: Min allowable value; the return of calculate will be
+        @param prefix i.e. R, C or L
+        @param suffix Typically a number, i.e. the "2" in R2
+        @param unit i.e. Hz, A, F, ...
+        @param series One of E3 through E96
+        @param calculate A callable that will be given all values of previous
+                         components in the calculation sequence. These values
+                         are floats, and the return must be a float.
+                         If this callable is None, the component will be
+                         interpreted as a degree of freedom.
+        @param minimum Min allowable value; the return of calculate will be
                         checked against this and failures will be silently
                         dropped.
                         Must be at least zero, or greater than zero if
                         calculate is not None.
-        :param maximum: Max allowable value; the return of calculate will be
+        @param maximum Max allowable value; the return of calculate will be
                         checked against this and failures will be silently
                         dropped.
-        :param use_for_err: If True, error from this component's ideal to
+        @param use_for_err If True, error from this component's ideal to
                             approximated value will influence the solution rank.
         """
         (
@@ -366,11 +367,11 @@ class Output:
         calculate: CalculateCall,
     ):
         """
-        :param name: i.e. Vout
-        :param unit: i.e. V, A, Hz...
-        :param expected: The value that this parameter would assume under ideal
+        @param name i.e. Vout
+        @param unit i.e. V, A, Hz...
+        @param expected The value that this parameter would assume under ideal
                          circumstances
-        :param calculate: A callable accepting a sequence of floats - one per
+        @param calculate A callable accepting a sequence of floats - one per
                           component, in the same order as they were passed to
                           the Solver constructor; returning a float.
         """
@@ -380,7 +381,7 @@ class Output:
 
     def error(self, value: float) -> float:
         """
-        :return: Absolute error, since the expected value might be 0
+        @return Absolute error, since the expected value might be 0
         """
         return value - self.expected
 
@@ -401,11 +402,11 @@ class Solver:
         threshold: Optional[float] = 1e-3,
     ):
         """
-        :param components: A sequence of Component instances. The order of this
-                           sequence determines the order of parameters passed to
-                           Output.calculate and Component.calculate.
-        :param outputs: A sequence of Output instances - can be empty.
-        :param threshold: Maximum error above which solutions will be discarded
+        @param components A sequence of Component instances. The order of this
+                          sequence determines the order of parameters passed to
+                          Output.calculate and Component.calculate.
+        @param outputs A sequence of Output instances - can be empty.
+        @param threshold Maximum error above which solutions will be discarded
         """
         self.components, self.outputs = components, outputs
         self.candidates: List[Tuple[
@@ -459,7 +460,7 @@ class Solver:
     def print(self, top: int = 10):
         """
         Print a table of all component values, output values and output error.
-        :param top: Row limit.
+        @param top Row limit.
         """
 
         print(' '.join(
