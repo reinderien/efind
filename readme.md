@@ -12,6 +12,8 @@ This script is:
   
   
 Environmental dependencies: [Python 3](https://www.python.org/).
+
+Known bugs: none; see [issues](https://github.com/reinderien/efind/issues) 
   
 `efind.py` is itself reasonably documented, but you're best to read through
 `examples.py`  for typical usage.
