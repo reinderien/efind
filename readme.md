@@ -17,3 +17,9 @@ Known bugs: none; see [issues](https://github.com/reinderien/efind/issues)
   
 `efind.py` is itself reasonably documented, but you're best to read through
 `examples.py`  for typical usage.
+
+
+## Contribution Model
+
+The [license](https://github.com/reinderien/efind/blob/main/license.txt) is unlikely to change for now.
+All pull requests will be considered, depending on complexity and quality.
