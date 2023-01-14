@@ -10,5 +10,8 @@ This script is:
 - without a user interface; the definitions are supplied by the user, in their
   own script
   
+  
+Environmental dependencies: [Python 3](https://www.python.org/).
+  
 `efind.py` is itself reasonably documented, but you're best to read through
 `examples.py`  for typical usage.
