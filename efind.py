@@ -1,6 +1,6 @@
 """
-Do a quick, sequential, numerical (not symbolic) exploration of some electronic
-component values to propose solutions that use standard, inexpensive parts.
+Do a quick, sequential, numerical (not symbolic) exploration of some electronic component values to
+propose solutions that use standard, inexpensive parts.
 """
 
 
@@ -66,14 +66,13 @@ def bisect_lower(a: Sequence[float], x: float) -> int:
     return i
 
 
-def approximate(x: float, series: Sequence[float]) -> (int, float):
+def approximate(x: float, series: Sequence[float]) -> tuple[Optional[int], float]:
     """
     Approximate a value by using the given series.
     @param x Any positive value
     @param series Any of E3 through E96
-    @return An integer index into the series for the element lesser than or
-             equal to the value's mantissa, and the value's decade - a power of
-             ten
+    @return An integer index into the series for the element lesser than or equal to the value's
+            mantissa, and the value's decade - a power of ten
     """
     if x == float('inf'):
         return None, float('inf')
@@ -118,9 +117,10 @@ def fmt_eng(x: float, unit: str, sig: int = 2) -> str:
     return fmt.format(mantissa, prefix, unit)
 
 
-# a callable with any number of floating-point
-# arguments, returning a float
 class CalculateCall(Protocol):
+    """
+    A callable with any number of floating-point arguments, returning a float
+    """
     def __call__(self, *args: float) -> float:
         ...
 
@@ -136,7 +136,7 @@ class ComponentValue:
         decade: Optional[float] = None,
         index: Optional[int] = None,
         exact: Optional[float] = None,
-    ):
+    ) -> None:
         """
         Valid combinations:
           - exact - approximated value will be calculated
@@ -145,8 +145,7 @@ class ComponentValue:
                             exact=approximate
 
         @param decade The quantity's power-of-ten
-        @param index The integer index into the series for the quantity's
-                      mantissa
+        @param index The integer index into the series for the quantity's mantissa
         @param exact The exact quantity, if known
         """
 
@@ -178,8 +177,8 @@ class ComponentValue:
 
     def get_other(self) -> Optional['ComponentValue']:
         """
-        @return: If this approximated value is below its exact value, then the
-                 next-highest E24 value; otherwise None
+        @return If this approximated value is below its exact value, then the next-highest E24
+                value; otherwise None
         """
         if self.approx >= self.exact:
             return None
@@ -200,7 +199,7 @@ class ComponentValue:
             return self
         return other
 
-    def __str__(self):
+    def __str__(self) -> str:
         return fmt_eng(self.approx, self.component.unit, self.component.digits)
 
     def fmt_exact(self) -> str:
@@ -209,8 +208,7 @@ class ComponentValue:
 
 class Component:
     """
-    A component, without knowledge of its value - only bounds and defining
-    formula
+    A component, without knowledge of its value - only bounds and defining formula
     """
 
     def __init__(
@@ -223,27 +221,23 @@ class Component:
         minimum: float = 0,
         maximum: Optional[float] = None,
         use_for_err: bool = True,
-    ):
+    ) -> None:
         """
         @param prefix i.e. R, C or L
         @param suffix Typically a number, i.e. the "2" in R2
         @param unit i.e. Hz, A, F, ...
         @param series One of E3 through E96
-        @param calculate A callable that will be given all values of previous
-                         components in the calculation sequence. These values
-                         are floats, and the return must be a float.
-                         If this callable is None, the component will be
-                         interpreted as a degree of freedom.
-        @param minimum Min allowable value; the return of calculate will be
-                        checked against this and failures will be silently
-                        dropped.
-                        Must be at least zero, or greater than zero if
-                        calculate is not None.
-        @param maximum Max allowable value; the return of calculate will be
-                        checked against this and failures will be silently
-                        dropped.
-        @param use_for_err If True, error from this component's ideal to
-                            approximated value will influence the solution rank.
+        @param calculate A callable that will be given all values of previous components in the
+                         calculation sequence. These values are floats, and the return must be a
+                         float. If this callable is None, the component will be interpreted as a
+                         degree of freedom.
+        @param minimum Min allowable value; the return of calculate will be checked against this and
+                       failures will be silently dropped. Must be at least zero, or greater than
+                       zero if calculate is not None.
+        @param maximum Max allowable value; the return of calculate will be checked against this and
+                       failures will be silently dropped.
+        @param use_for_err If True, error from this component's ideal to approximated value will
+                              influence the solution rank.
         """
         (
             self.prefix, self.suffix, self.unit, self.series,
@@ -253,8 +247,10 @@ class Component:
             use_for_err,
         )
 
-        assert minimum >= 0
-        assert maximum is None or maximum >= minimum
+        if minimum < 0:
+            raise ValueError('Minimum must be non-negative')
+        if maximum is not None and maximum < minimum:
+            raise ValueError('Invalid maximum value')
 
         if calculate:
             self.values = self._calculate_values
@@ -264,11 +260,9 @@ class Component:
 
         self.digits: int = 3 if len(series) > 24 else 2
 
-        self.fmt_field: Callable[[str], str] = (
-            ('{:>%d}' % (4 + self.digits)).format
-        )
+        self.fmt_field: Callable[[str], str] = ('{:>%d}' % (4 + self.digits)).format
 
-    def __str__(self):
+    def __str__(self) -> str:
         return self.name
 
     @property
@@ -337,9 +331,8 @@ class Resistor(Component):
         minimum: float = 0,
         maximum: Optional[float] = None,
         use_for_err: bool = False,
-    ):
-        super().__init__('R', suffix, 'Ω', series, calculate, minimum, maximum,
-                         use_for_err)
+    ) -> None:
+        super().__init__('R', suffix, 'Ω', series, calculate, minimum, maximum, use_for_err)
 
 
 class Capacitor(Component):
@@ -352,28 +345,24 @@ class Capacitor(Component):
         maximum: Optional[float] = None,
         use_for_err: bool = True,
     ):
-        super().__init__('C', suffix, 'F', series, calculate, minimum, maximum,
-                         use_for_err)
+        super().__init__('C', suffix, 'F', series, calculate, minimum, maximum, use_for_err)
 
 
 class Output:
     """
-    A calculated parameter - potentially but not necessarily a circuit output -
-    to be calculated and checked for error in the solution ranking process.
+    A calculated parameter - potentially but not necessarily a circuit output - to be calculated and
+    checked for error in the solution ranking process.
     """
 
     def __init__(
-        self, name: str, unit: str, expected: float,
-        calculate: CalculateCall,
-    ):
+        self, name: str, unit: str, expected: float, calculate: CalculateCall,
+    ) -> None:
         """
         @param name i.e. Vout
         @param unit i.e. V, A, Hz...
-        @param expected The value that this parameter would assume under ideal
-                         circumstances
-        @param calculate A callable accepting a sequence of floats - one per
-                          component, in the same order as they were passed to
-                          the Solver constructor; returning a float.
+        @param expected The value that this parameter would assume under ideal circumstances
+        @param calculate A callable accepting a sequence of floats - one per component, in the same
+                         order as they were passed to the Solver constructor; returning a float.
         """
         self.name, self.unit, self.expected, self.calculate = (
             name, unit, expected, calculate,
@@ -385,14 +374,13 @@ class Output:
         """
         return value - self.expected
 
-    def __str__(self):
+    def __str__(self) -> str:
         return self.name
 
 
 class Solver:
     """
-    Basic recursive solver class that does a brute-force search through some
-    component values.
+    Basic recursive solver class that does a brute-force search through some component values.
     """
 
     def __init__(
@@ -400,13 +388,13 @@ class Solver:
         components: Sequence[Component],
         outputs: Sequence[Output],
         threshold: Optional[float] = 1e-3,
-    ):
+    ) -> None:
         """
-        @param components A sequence of Component instances. The order of this
-                          sequence determines the order of parameters passed to
-                          Output.calculate and Component.calculate.
+        @param components A sequence of Component instances. The order of this sequence determines
+                          the order of parameters passed to Output.calculate and
+                          Component.calculate.
         @param outputs A sequence of Output instances - can be empty.
-        @param threshold Maximum error above which solutions will be discarded
+        @param threshold Maximum error above which solutions will be discarded.
         """
         self.components, self.outputs = components, outputs
         self.candidates: List[Tuple[
@@ -417,7 +405,7 @@ class Solver:
         self.approx_seen: Set[Tuple[float, ...]] = set()
         self.threshold = threshold
 
-    def _recurse(self, values: List[Optional[ComponentValue]], index: int = 0):
+    def _recurse(self, values: List[Optional[ComponentValue]], index: int = 0) -> None:
         if index >= len(self.components):
             self._evaluate(values)
         else:
@@ -426,17 +414,16 @@ class Solver:
                 values[index] = v
                 self._recurse(values, index+1)
 
-    def solve(self):
+    def solve(self) -> None:
         """
-        Recurse through all of the components, doing a brute-force search.
-        Results are stored in self.candidates and sorted in order of increasing
-        error.
+        Recurse through all of the components, doing a brute-force search. Results are stored in
+        self.candidates and sorted in order of increasing error.
         """
         values = [None]*len(self.components)
         self._recurse(values)
         self.candidates.sort(key=lambda v: v[0])
 
-    def _evaluate(self, values: Sequence[ComponentValue]):
+    def _evaluate(self, values: Sequence[ComponentValue]) -> None:
         approx = tuple(v.approx for v in values)
         if approx in self.approx_seen:
             return
@@ -457,7 +444,7 @@ class Solver:
             self.candidates.append((err, outputs, tuple(values)))
             self.approx_seen.add(approx)
 
-    def print(self, top: int = 10):
+    def print(self, top: int = 10) -> None:
         """
         Print a table of all component values, output values and output error.
         @param top Row limit.
