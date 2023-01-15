@@ -1,3 +1,5 @@
+If reading this on [Github](https://github.com/reinderien/efind/), consider viewing this on the [Doxygen site](https://reinderien.github.io/efind/).
+
 This is a simple script to propose component values from the 
 [E-series of preferred numbers](https://en.wikipedia.org/wiki/E_series_of_preferred_numbers)
 that, when implemented in an electronic system defined by the script user,
