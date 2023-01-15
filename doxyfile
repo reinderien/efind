@@ -20,13 +20,10 @@ WARN_IF_UNDOC_ENUM_VAL=YES
 
 ## to do: will set a value to EAMPLE_PATH 
 
-## to do: will set USE_MDFILE_AS_MAINPAGE
 
 SOURCE_BROWSER=YES
 
 ## will revise according to best practices if needed
-
-HTML_TIMESTAMP=YES
 
 HTML_DYNAMIC_SECTIONS=YES
 
@@ -35,9 +32,4 @@ GENERATE_TREEVIEW=YES
 GENERATE_LATEX=NO
 
 USE_MDFILE_AS_MAINPAGE=readme.md
-
-
-
-
-
 
